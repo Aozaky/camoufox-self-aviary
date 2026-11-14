@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Camoufox Test Page</title>
+</head>
+<body>
+  <h1 id="heading">Camoufox Milestone 1 Test</h1>
+  <p id="marker">MARKER_INITIAL</p>
+  <button id="clickme" onclick="document.getElementById('marker').textContent='MARKER_CLICKED'">Click Me</button>
+  <div id="storage-result"></div>
+  <button id="persist" onclick="localStorage.setItem('overnight','persisted'); document.cookie='overnight=persisted; Max-Age=86400; Path=/'; document.querySelector('#storage-result').textContent='PERSISTED: persisted'">Persist fixture</button>
+  <input id="operator" aria-label="Operator marker" oninput="localStorage.setItem('operator',this.value); document.querySelector('#operator-result').textContent=this.value">
+  <p id="operator-result"></p>
+  <input id="upload" type="file" onchange="document.querySelector('#upload-result').textContent='UPLOADED'">
+  <p id="upload-result"></p>
+  <a id="download" href="data:text/plain,fixture-download" download="fixture.txt">Download fixture</a>
+  <button id="hybrid-write" onclick="writeHybrid()">Write synthetic isolation marker</button>
+  <button id="hybrid-clean" onclick="cleanHybrid()">Remove synthetic isolation markers</button>
+  <p id="hybrid-state"></p>
+  <script>
+    const keys=['hybrid_main','hybrid_temp','hybrid_mutated'];
+    function showHybrid(){document.querySelector('#hybrid-state').textContent=keys.map(k=>k+':'+(localStorage.getItem(k)||'absent')+':'+(document.cookie.split('; ').some(c=>c===k+'=yes')?'cookie':'absent')).join('|');}
+    function writeHybrid(){const k=new URLSearchParams(location.search).get('marker');if(keys.includes(k)){localStorage.setItem(k,'yes');document.cookie=k+'=yes; Max-Age=86400; Path=/';}showHybrid();}
+    function cleanHybrid(){for(const k of keys){localStorage.removeItem(k);document.cookie=k+'=; Max-Age=0; Path=/';}localStorage.removeItem('operator');showHybrid();}
+    showHybrid();
+    // On load, show any previously stored value
+    document.querySelector('#operator-result').textContent=localStorage.getItem('operator')||'';
+    const prev = localStorage.getItem('test_persist') || localStorage.getItem('overnight');
+    if (prev) {
+      document.getElementById('storage-result').textContent = 'PERSISTED:' + prev;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+# MCP 1.21 imports Pydantic private API removed in 2.14.
+pydantic==2.12.4
+pydantic-settings==2.12.0
+sse-starlette==3.0.3

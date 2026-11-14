@@ -1,0 +1,47 @@
+# Camoufox MCP browser — one-command self-hosted deployment
+# All ports bind to 127.0.0.1 by default; expose behind your own TLS proxy.
+services:
+  camoufox:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+    image: camoufox-self-aviary:local
+    container_name: ${CONTAINER_NAME:-aviary}
+    shm_size: "512m"
+    ports:
+      - "127.0.0.1:${VIEWER_PORT:-6901}:6901"     # KasmVNC viewer (operator UI only)
+      - "127.0.0.1:${GATEWAY_PORT:-19280}:19280" # API / MCP / claim endpoints
+    environment:
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://127.0.0.1:19280}
+      CAMOUFOX_VIEWER_PASSWORD: ${CAMOUFOX_VIEWER_PASSWORD:?set in .env}
+      VNC_PW: ${CAMOUFOX_VIEWER_PASSWORD:?set in .env}
+      VNC_RESOLUTION: ${VNC_RESOLUTION:-1440x900}
+    healthcheck:
+      test: ["CMD", "/opt/camoufox-venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:19280/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 40s
+      retries: 3
+    volumes:
+      - camoufox-profile:/home/kasm-user/camoufox-profile
+      - ./docker/test_page.html:/opt/test_page.html:ro
+      - ./tests:/home/kasm-user/tests:ro
+      - ./docker/custom_startup.sh:/dockerstartup/custom_startup.sh:ro
+      - ./scripts:/home/kasm-user/scripts:ro
+    deploy:
+      resources:
+        limits:
+          memory: 3g
+          cpus: "2.0"
+    stop_grace_period: 30s
+    restart: unless-stopped
+    networks:
+      - camoufox-net
+
+volumes:
+  camoufox-profile:
+    name: ${COMPOSE_PROJECT_NAME:-aviary}-profile
+
+networks:
+  camoufox-net:
+    name: ${COMPOSE_PROJECT_NAME:-aviary}-net

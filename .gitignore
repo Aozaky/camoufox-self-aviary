@@ -1,0 +1,14 @@
+.env
+*.token
+api.token
+private/
+backups/
+profiles/
+*.age
+*.sqlite
+*.sqlite-*
+cookies*
+__pycache__/
+*.pyc
+.pytest_cache/
+*.log
